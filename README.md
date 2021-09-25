@@ -1,4 +1,4 @@
-# leaders_of_digital_hack
+# Leaders Of Digital Hack
 
 Leaders Of Digital Hack Flutter web solution.
 
