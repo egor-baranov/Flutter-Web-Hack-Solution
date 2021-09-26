@@ -1,4 +1,4 @@
-# Leaders Of Digital Hack
+# Leaders of Digital Hack
 
 Leaders Of Digital Hack Flutter web solution.
 
@@ -11,4 +11,10 @@ Leaders Of Digital Hack Flutter web solution.
 * DataTable with sorting by any column
 * Filter panel with search parameters
 * Null Safety
-* Adaptive ui for mobile version (in progress) 
+* Adaptive ui for mobile version [In Progress] 
+
+## Web App Playground
+[In Progress]
+
+# Mobile App of Service
+[In Progress]
