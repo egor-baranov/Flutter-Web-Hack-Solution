@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:leaders_of_digital_hack/model/employee.dart';
+import 'package:leaders_of_digital_hack/util/request_worker.dart';
 import 'package:syncfusion_flutter_datepicker/datepicker.dart';
 import 'package:date_field/date_field.dart';
 import 'package:multiselect/multiselect.dart';
@@ -65,7 +66,6 @@ class _AddEmployeePageState extends State<AddEmployeePage> {
     'Аккумуляторщик ',
     'Электромеханик',
     'Бухгалтер',
-    'Эксперт',
     'Ведущий бухгалтер',
     'Электрогазосварщик 6 разряда',
     'Специалист',
@@ -293,9 +293,18 @@ class _AddEmployeePageState extends State<AddEmployeePage> {
                       },
                       items: <String>[
                         'Москва',
-                        'Санкт-Петербург',
-                        'Мытищи',
-                        'Казань'
+                        'Щербинка',
+                        'Обнинск',
+                        'Саратов',
+                        'Пенза',
+                        'Новоросийск',
+                        'Омск',
+                        'Смоленск',
+                        'Иваново',
+                        'Белгород',
+                        'Шиханы',
+                        'Кузнецк',
+                        'Кандалакша'
                       ].map<DropdownMenuItem<String>>((String value) {
                         return DropdownMenuItem<String>(
                           value: value,
@@ -420,18 +429,17 @@ class _AddEmployeePageState extends State<AddEmployeePage> {
                           content: new Row(
                             children: <Widget>[
                               new CircularProgressIndicator(),
-                              new Text("    Загружаем данные...")
+                              new Text("    Вносим данные сотрудника в базу...")
                             ],
                           ),
                         ));
-                        Future.delayed(const Duration(milliseconds: 2000), () {
-                          setState(() {
-                            if (Navigator.canPop(context)) {
-                              Navigator.pop(context);
-                            } else {
-                              SystemNavigator.pop();
-                            }
-                          });
+                        setState(() {
+                          RequestWorker.addEmployeeData();
+                          if (Navigator.canPop(context)) {
+                            Navigator.pop(context);
+                          } else {
+                            SystemNavigator.pop();
+                          }
                         });
                       },
                       child: Text("Добавить"),

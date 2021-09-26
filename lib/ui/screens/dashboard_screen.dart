@@ -28,34 +28,43 @@ class DashboardPage extends StatefulWidget {
 }
 
 class _DashboardPageState extends State<DashboardPage> {
-  bool isMarriedChecked = false;
-  RangeValues _salaryRangeValues = const RangeValues(40000, 80000);
   RangeValues _childrenRangeValues = const RangeValues(0, 10);
+  RangeValues _salaryRangeValues = RangeValues(0, 30000001);
   Gender _gender = Gender.any;
+  bool ascending = false;
+  int sortColumnIndex = 0;
+
   MaritalStatus _maritalStatus = MaritalStatus.any;
+  List<String> educations = ["Высшее"], cities = ["Москва"];
+  DateTime startDate = DateTime.parse("1900-01-01"),
+      endDate = DateTime.parse("2100-01-01");
+
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
-  var rows = List<DataRow>.generate(
-    20,
-    (index) => DataRow(
-      cells: <DataCell>[
-        DataCell(Text(Random().nextInt(100000).toString())),
-        DataCell(Text(Random().nextInt(13).toString() + ' мес.')),
-        DataCell(Text(Random().nextInt(300).toString() + ' тыс. руб.')),
-        DataCell(Text([
-          "Спб",
-          "Москва",
-          "Мытищи",
-          "Сызрань",
-          "Щелково"
-        ][Random().nextInt(5)])),
-        DataCell(Text([
-          "Высшее",
-          "Среднее",
-          "Школа",
-        ][Random().nextInt(3)])),
-      ],
-    ),
-  );
+  var employees = <Employee>[];
+
+  Future<void> updateRows() async {
+    var employeeList = await RequestWorker.fetchFiltered(
+      ['Москва'],
+      _gender,
+      RangeValues(
+        _childrenRangeValues.start,
+        _childrenRangeValues.end,
+      ),
+      _maritalStatus,
+      _salaryRangeValues,
+      cities,
+      educations,
+      startDate,
+      endDate,
+    );
+    employeeList.shuffle();
+    employeeList = employeeList.sublist(0, min(100, employeeList.length));
+    print("EmployeeList: $employeeList");
+
+    setState(() {
+      employees = employeeList;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -136,17 +145,19 @@ class _DashboardPageState extends State<DashboardPage> {
               Expanded(
                   flex: 1,
                   child:
-                      buildGraphCard(context, SimpleBarChart.withSampleData())),
+                      buildGraphCard(context, SimpleBarChart.withSampleData(employees))),
               SizedBox(height: 16),
               Expanded(
                   flex: 1,
                   child: buildGraphCard(
-                      context, PointsLineChart.withSampleData())),
+                      context,
+                      PointsLineChart.withSampleData(
+                          employees.map((e) => e.prediction).toList()))),
               SizedBox(height: 16),
               Expanded(
                   flex: 1,
                   child: buildGraphCard(
-                      context, PieOutsideLabelChart.withSampleData()))
+                      context, PieOutsideLabelChart.withSampleData(employees)))
             ],
           ),
         )
@@ -167,36 +178,244 @@ class _DashboardPageState extends State<DashboardPage> {
             color: Theme.of(context).dialogBackgroundColor,
           ),
           child: IntrinsicHeight(
-            child: SingleChildScrollView(
-              scrollDirection: basicTypes.Axis.horizontal,
-              child: SingleChildScrollView(
-                scrollDirection: basicTypes.Axis.vertical,
-                child: Column(children: [
-                  Text(
-                    "Список сотрудников",
-                    style: GoogleFonts.montserrat(
-                      fontSize: 24,
-                      fontWeight: FontWeight.w600,
+            child: Column(
+              children: [
+                Text(
+                  "Список сотрудников",
+                  style: GoogleFonts.montserrat(
+                    fontSize: 24,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                SizedBox(height: 16),
+                Expanded(
+                  child: SingleChildScrollView(
+                    scrollDirection: basicTypes.Axis.horizontal,
+                    child: SingleChildScrollView(
+                      scrollDirection: basicTypes.Axis.vertical,
+                      child: Column(children: [
+                        DataTable(
+                            sortAscending: ascending,
+                            sortColumnIndex: sortColumnIndex,
+                            columns: <DataColumn>[
+                              DataColumn(
+                                label: Text('ID'),
+                                onSort: (columnIndex, ascending) {
+                                  setState(() {
+                                    this.sortColumnIndex = columnIndex;
+                                    this.ascending = ascending;
+                                    if (this.ascending) {
+                                      employees
+                                          .sort((a, b) => a.id.compareTo(b.id));
+                                    } else {
+                                      employees
+                                          .sort((a, b) => b.id.compareTo(a.id));
+                                    }
+                                  });
+                                },
+                              ),
+                              DataColumn(
+                                label: Text('Оставшееся\nвремя в компании'),
+                                onSort: (columnIndex, ascending) {
+                                  setState(() {
+                                    this.sortColumnIndex = columnIndex;
+                                    this.ascending = ascending;
+                                    if (this.ascending) {
+                                      employees.sort((a, b) =>
+                                          a.prediction.compareTo(b.prediction));
+                                    } else {
+                                      employees.sort((a, b) =>
+                                          b.prediction.compareTo(a.prediction));
+                                    }
+                                  });
+                                },
+                              ),
+                              DataColumn(
+                                label: Text('Должность'),
+                                onSort: (columnIndex, ascending) {
+                                  setState(() {
+                                    this.sortColumnIndex = columnIndex;
+                                    this.ascending = ascending;
+                                    if (this.ascending) {
+                                      employees.sort((a, b) =>
+                                          a.speciality.compareTo(b.speciality));
+                                    } else {
+                                      employees.sort((a, b) =>
+                                          b.speciality.compareTo(a.speciality));
+                                    }
+                                  });
+                                },
+                              ),
+                              DataColumn(
+                                label: Text('Стаж в \nкомпании'),
+                                onSort: (columnIndex, ascending) {
+                                  setState(() {
+                                    this.sortColumnIndex = columnIndex;
+                                    this.ascending = ascending;
+                                    if (this.ascending) {
+                                      employees.sort((a, b) => a
+                                          .workedMonths()
+                                          .compareTo(b.workedMonths()));
+                                    } else {
+                                      employees.sort((a, b) => b
+                                          .workedMonths()
+                                          .compareTo(a.workedMonths()));
+                                    }
+                                  });
+                                },
+                              ),
+                              DataColumn(
+                                label: Text('Оклад'),
+                                onSort: (columnIndex, ascending) {
+                                  setState(() {
+                                    this.sortColumnIndex = columnIndex;
+                                    this.ascending = ascending;
+                                    if (this.ascending) {
+                                      employees.sort((a, b) =>
+                                          a.salary.compareTo(b.salary));
+                                    } else {
+                                      employees.sort((a, b) =>
+                                          b.salary.compareTo(a.salary));
+                                    }
+                                  });
+                                },
+                              ),
+                              DataColumn(
+                                label: Text('Город'),
+                                onSort: (columnIndex, ascending) {
+                                  setState(() {
+                                    this.sortColumnIndex = columnIndex;
+                                    this.ascending = ascending;
+                                    if (this.ascending) {
+                                      employees.sort(
+                                          (a, b) => a.city.compareTo(b.city));
+                                    } else {
+                                      employees.sort(
+                                          (a, b) => b.city.compareTo(a.city));
+                                    }
+                                  });
+                                },
+                              ),
+                              DataColumn(
+                                label: Text('Образование'),
+                                onSort: (columnIndex, ascending) {
+                                  setState(() {
+                                    this.sortColumnIndex = columnIndex;
+                                    this.ascending = ascending;
+                                    if (this.ascending) {
+                                      employees.sort((a, b) =>
+                                          a.education.compareTo(b.education));
+                                    } else {
+                                      employees.sort((a, b) =>
+                                          b.education.compareTo(a.education));
+                                    }
+                                  });
+                                },
+                              ),
+                              DataColumn(
+                                label: Text('Пол'),
+                                onSort: (columnIndex, ascending) {
+                                  setState(() {
+                                    this.sortColumnIndex = columnIndex;
+                                    this.ascending = ascending;
+                                    if (this.ascending) {
+                                      employees.sort((a, b) => a.gender
+                                          .toString()
+                                          .compareTo(b.gender.toString()));
+                                    } else {
+                                      employees.sort((a, b) => b.gender
+                                          .toString()
+                                          .compareTo(a.gender.toString()));
+                                    }
+                                  });
+                                },
+                              ),
+                              DataColumn(
+                                label: Text('Дата рождения'),
+                                onSort: (columnIndex, ascending) {
+                                  setState(() {
+                                    this.sortColumnIndex = columnIndex;
+                                    this.ascending = ascending;
+                                    if (this.ascending) {
+                                      employees.sort((a, b) =>
+                                          a.birthDate.compareTo(b.birthDate));
+                                    } else {
+                                      employees.sort((a, b) =>
+                                          b.birthDate.compareTo(a.birthDate));
+                                    }
+                                  });
+                                },
+                              ),
+                              DataColumn(
+                                label: Text('Дни отсутствия'),
+                                onSort: (columnIndex, ascending) {
+                                  setState(() {
+                                    this.sortColumnIndex = columnIndex;
+                                    this.ascending = ascending;
+                                    if (this.ascending) {
+                                      employees.sort((a, b) => a.absenceDays
+                                          .compareTo(b.absenceDays));
+                                    } else {
+                                      employees.sort((a, b) => b.absenceDays
+                                          .compareTo(a.absenceDays));
+                                    }
+                                  });
+                                },
+                              ),
+                              DataColumn(
+                                label: Text('Количество детей'),
+                                onSort: (columnIndex, ascending) {
+                                  setState(() {
+                                    this.sortColumnIndex = columnIndex;
+                                    this.ascending = ascending;
+                                    if (this.ascending) {
+                                      employees.sort((a, b) => a.childrenCount
+                                          .compareTo(b.childrenCount));
+                                    } else {
+                                      employees.sort((a, b) => b.childrenCount
+                                          .compareTo(a.childrenCount));
+                                    }
+                                  });
+                                },
+                              )
+                            ],
+                            rows: employees
+                                .map(
+                                  (item) => DataRow(
+                                    cells: <DataCell>[
+                                      DataCell(Text(item.id.toString())),
+                                      DataCell(Text(
+                                          (item.prediction ~/ 28).toString() +
+                                              " мес.")),
+                                      DataCell(Text(item.speciality)),
+                                      DataCell(
+                                          Text('${item.workedMonths()} мес.')),
+                                      DataCell(Text(
+                                          item.salary.toString() + ' руб.')),
+                                      DataCell(Text(item.city)),
+                                      DataCell(Text(item.education)),
+                                      DataCell(Text(item.gender == Gender.male
+                                          ? "Мужской"
+                                          : "Женский")),
+                                      DataCell(Text(item.birthDate
+                                          .toString()
+                                          .split(" ")[0]
+                                          .split("-")
+                                          .reversed
+                                          .join("."))),
+                                      DataCell(
+                                          Text(item.absenceDays.toString())),
+                                      DataCell(
+                                          Text(item.childrenCount.toString()))
+                                    ],
+                                  ),
+                                )
+                                .toList()),
+                      ]),
                     ),
                   ),
-                  SizedBox(height: 48),
-                  DataTable(columns: <DataColumn>[
-                    DataColumn(
-                      label: Text('ID'),
-                    ),
-                    DataColumn(
-                      label: Text('Работал'),
-                    ),
-                    DataColumn(
-                      label: Text('Зарплата'),
-                    ),
-                    DataColumn(
-                      label: Text('Город'),
-                    ),
-                    DataColumn(label: Text('Образование'))
-                  ], rows: rows),
-                ]),
-              ),
+                ),
+              ],
             ),
           )),
     );
@@ -261,9 +480,25 @@ class _DashboardPageState extends State<DashboardPage> {
               style: Theme.of(context).textTheme.headline6,
             ),
             DropDownMultiSelect(
-              onChanged: (List<String> x) {},
-              options: ['Москва', 'Санкт-Петербург', 'Щёлково', 'Казань'],
-              selectedValues: [],
+              onChanged: (List<String> x) {
+                cities = x;
+              },
+              options: [
+                'Москва',
+                'Щербинка',
+                'Обнинск',
+                'Саратов',
+                'Пенза',
+                'Новоросийск',
+                'Омск',
+                'Смоленск',
+                'Иваново',
+                'Белгород',
+                'Шиханы',
+                'Кузнецк',
+                'Кандалакша'
+              ],
+              selectedValues: cities,
               whenEmpty: 'Выберите город',
             ),
             Text(
@@ -271,9 +506,11 @@ class _DashboardPageState extends State<DashboardPage> {
               style: Theme.of(context).textTheme.headline6,
             ),
             DropDownMultiSelect(
-              onChanged: (List<String> x) {},
+              onChanged: (List<String> x) {
+                educations = x;
+              },
               options: ['Высшее', 'Среднее специальное', 'Среднее'],
-              selectedValues: [],
+              selectedValues: educations,
               whenEmpty: 'Выберите образование',
             ),
             SizedBox(height: 8),
@@ -293,7 +530,7 @@ class _DashboardPageState extends State<DashboardPage> {
                 mode: DateTimeFieldPickerMode.date,
                 autovalidateMode: AutovalidateMode.always,
                 onDateSelected: (DateTime value) {
-                  print(value);
+                  startDate = value;
                 },
               ),
             ),
@@ -309,7 +546,7 @@ class _DashboardPageState extends State<DashboardPage> {
                 mode: DateTimeFieldPickerMode.date,
                 autovalidateMode: AutovalidateMode.always,
                 onDateSelected: (DateTime value) {
-                  print(value);
+                  endDate = value;
                 },
               ),
             ),
@@ -425,6 +662,12 @@ class _DashboardPageState extends State<DashboardPage> {
             SizedBox(
               width: 350,
               child: TextField(
+                onChanged: (text) {
+                  _salaryRangeValues = RangeValues(
+                    int.parse(text.isEmpty ? "0" : text).toDouble(),
+                    _salaryRangeValues.end,
+                  );
+                },
                 decoration: InputDecoration(
                     border: OutlineInputBorder(),
                     labelText: 'От',
@@ -441,6 +684,12 @@ class _DashboardPageState extends State<DashboardPage> {
                     border: OutlineInputBorder(),
                     labelText: 'До',
                     suffixText: 'руб.'),
+                onChanged: (text) {
+                  _salaryRangeValues = RangeValues(
+                    _salaryRangeValues.start,
+                    int.parse(text.isEmpty ? "300000001" : text).toDouble(),
+                  );
+                },
                 keyboardType: TextInputType.number,
                 inputFormatters: [FilteringTextInputFormatter.digitsOnly],
               ),
@@ -497,17 +746,14 @@ class _DashboardPageState extends State<DashboardPage> {
                       ],
                     ),
                   ));
-                  Future.delayed(const Duration(milliseconds: 2000), () {
-                    setState(() {
-                      if (Navigator.canPop(context)) {
-                        Navigator.pop(context);
-                      } else {
-                        SystemNavigator.pop();
-                      }
-                    });
+                  setState(() {
+                    updateRows();
+                    if (Navigator.canPop(context)) {
+                      Navigator.pop(context);
+                    } else {
+                      SystemNavigator.pop();
+                    }
                   });
-
-                  RequestWorker.fetchFiltered();
                 },
                 child: Text("Применить"),
               ),

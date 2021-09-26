@@ -1,5 +1,6 @@
 import 'package:charts_flutter/flutter.dart' as charts;
 import 'package:flutter/material.dart';
+import 'package:leaders_of_digital_hack/model/employee.dart';
 
 class SimpleBarChart extends StatelessWidget {
   final List<charts.Series> seriesList;
@@ -8,31 +9,31 @@ class SimpleBarChart extends StatelessWidget {
   SimpleBarChart(this.seriesList, {this.animate = true});
 
   /// Creates a [BarChart] with sample data and no transition.
-  factory SimpleBarChart.withSampleData() {
+  factory SimpleBarChart.withSampleData(List<Employee> list) {
     return new SimpleBarChart(
-      _createSampleData(),
+      _createSampleData(list),
       // Disable animations for image tests.
       animate: false,
     );
   }
 
-
   @override
   Widget build(BuildContext context) {
     return new charts.BarChart(
-      _createSampleData(),
+      _createSampleData([]),
       animate: animate,
     );
   }
 
   /// Create one series with sample hard coded data.
-  static List<charts.Series<OrdinalSales, String>> _createSampleData() {
-    final data = [
-      new OrdinalSales('2014', 5),
-      new OrdinalSales('2015', 25),
-      new OrdinalSales('2016', 100),
-      new OrdinalSales('2017', 75),
-    ];
+  static List<charts.Series<OrdinalSales, String>> _createSampleData(
+      List<Employee> list) {
+    list.sort((a, b) => a.birthDate.compareTo(b.birthDate));
+    final data = list
+        .map((e) => new OrdinalSales(
+            e.birthDate.toString().split(" ")[0].split("-").reversed.join("."),
+            e.prediction))
+        .toList();
 
     return [
       new charts.Series<OrdinalSales, String>(
