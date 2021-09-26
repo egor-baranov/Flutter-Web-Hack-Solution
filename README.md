@@ -11,6 +11,7 @@ Leaders Of Digital Hack Flutter web solution.
 * DataTable with sorting by any column
 * Filter panel with search parameters
 * Null Safety
+* Ability to update database with new employee data
 * Adaptive ui for mobile version [In Progress] 
 
 ## Web Playground
