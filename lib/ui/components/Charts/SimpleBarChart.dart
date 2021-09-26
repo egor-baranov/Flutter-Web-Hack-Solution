@@ -8,7 +8,7 @@ class SimpleBarChart extends StatelessWidget {
   final List<charts.Series> seriesList;
   final bool animate;
 
-  SimpleBarChart(this.seriesList, {this.animate = true});
+  SimpleBarChart(this.seriesList, {this.animate = false});
 
   /// Creates a [BarChart] with sample data and no transition.
   factory SimpleBarChart.withSampleData(List<Employee> list) {
@@ -19,30 +19,38 @@ class SimpleBarChart extends StatelessWidget {
     );
   }
 
-
   @override
   Widget build(BuildContext context) {
     return new charts.BarChart(
-      _createSampleData([]),
+      List.from(seriesList),
       animate: animate,
     );
   }
 
   /// Create one series with sample hard coded data.
-  static List<charts.Series<OrdinalSales, String>> _createSampleData(List<Employee> list) {
-    // list.sort((a, b) => a.birthDate.compareTo(b.birthDate));
-    // final data = list
-    //     .map((e) => new OrdinalSales(
-    //     e.birthDate.toString().split(" ")[0].split("-").reversed.join("."),
-    //     e.prediction))
-    //     .toList();
+  static List<charts.Series<OrdinalSales, String>> _createSampleData(
+      List<Employee> list) {
 
-    final data = [
-      new OrdinalSales('2014', Random().nextInt(100)),
-      new OrdinalSales('2015', Random().nextInt(100)),
-      new OrdinalSales('2016', Random().nextInt(100)),
-      new OrdinalSales('2017', Random().nextInt(100)),
-    ];
+    print(list);
+    list.sort((a, b) => a.birthDate.compareTo(b.birthDate));
+    var data = <OrdinalSales>[];
+
+    if (list.length < 4) {
+      data = [
+        new OrdinalSales('2014', Random().nextInt(100)),
+        new OrdinalSales('2015', Random().nextInt(100)),
+        new OrdinalSales('2016', Random().nextInt(100)),
+        new OrdinalSales('2017', Random().nextInt(100))
+      ];
+    } else {
+      list.shuffle();
+      list = list.take(10).toList();
+      list.sort((a, b) => a.birthDate.compareTo(b.birthDate));
+      data = list
+          .map((e) => new OrdinalSales(
+          e.birthDate.toString().split(" ")[0].split("-")[0],
+          e.prediction)).toList();
+    }
 
     return [
       new charts.Series<OrdinalSales, String>(

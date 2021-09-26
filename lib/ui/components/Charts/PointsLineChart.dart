@@ -21,21 +21,26 @@ class PointsLineChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return new charts.LineChart(_createSampleData([]),
+    return new charts.LineChart(List.from(seriesList),
         animate: animate,
         defaultRenderer: new charts.LineRendererConfig(includePoints: true));
   }
 
   /// Create one series with sample hard coded data.
   static List<charts.Series<LinearSales, int>> _createSampleData(List<int> list) {
-    // final data = new List<int>.generate(list.length - 1, (i) => i + 1)
-    //     .map((e) => new LinearSales(e, list[e] % 100)).toList();
-    final data = [
+    print(list);
+
+    var data = [
       new LinearSales(0, Random().nextInt(100)),
       new LinearSales(1, Random().nextInt(100)),
       new LinearSales(2, Random().nextInt(100)),
       new LinearSales(3, Random().nextInt(100)),
     ];
+
+    if(list.length >= 4) {
+    data = new List<int>.generate(list.length - 1, (i) => i + 1)
+        .map((e) => new LinearSales(e, list[e] % 100)).take(10).toList();
+    }
 
     return [
       new charts.Series<LinearSales, int>(
