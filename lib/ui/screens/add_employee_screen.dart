@@ -433,13 +433,15 @@ class _AddEmployeePageState extends State<AddEmployeePage> {
                             ],
                           ),
                         ));
-                        setState(() {
-                          RequestWorker.addEmployeeData();
-                          if (Navigator.canPop(context)) {
-                            Navigator.pop(context);
-                          } else {
-                            SystemNavigator.pop();
-                          }
+                        Future.delayed(const Duration(milliseconds: 2000), () {
+                          setState(() {
+                            RequestWorker.addEmployeeData();
+                            if (Navigator.canPop(context)) {
+                              Navigator.pop(context);
+                            } else {
+                              SystemNavigator.pop();
+                            }
+                          });
                         });
                       },
                       child: Text("Добавить"),
