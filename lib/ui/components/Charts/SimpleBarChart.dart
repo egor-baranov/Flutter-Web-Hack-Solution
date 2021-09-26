@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:charts_flutter/flutter.dart' as charts;
 import 'package:flutter/material.dart';
 import 'package:leaders_of_digital_hack/model/employee.dart';
@@ -17,6 +19,7 @@ class SimpleBarChart extends StatelessWidget {
     );
   }
 
+
   @override
   Widget build(BuildContext context) {
     return new charts.BarChart(
@@ -26,14 +29,20 @@ class SimpleBarChart extends StatelessWidget {
   }
 
   /// Create one series with sample hard coded data.
-  static List<charts.Series<OrdinalSales, String>> _createSampleData(
-      List<Employee> list) {
-    list.sort((a, b) => a.birthDate.compareTo(b.birthDate));
-    final data = list
-        .map((e) => new OrdinalSales(
-            e.birthDate.toString().split(" ")[0].split("-").reversed.join("."),
-            e.prediction))
-        .toList();
+  static List<charts.Series<OrdinalSales, String>> _createSampleData(List<Employee> list) {
+    // list.sort((a, b) => a.birthDate.compareTo(b.birthDate));
+    // final data = list
+    //     .map((e) => new OrdinalSales(
+    //     e.birthDate.toString().split(" ")[0].split("-").reversed.join("."),
+    //     e.prediction))
+    //     .toList();
+
+    final data = [
+      new OrdinalSales('2014', Random().nextInt(100)),
+      new OrdinalSales('2015', Random().nextInt(100)),
+      new OrdinalSales('2016', Random().nextInt(100)),
+      new OrdinalSales('2017', Random().nextInt(100)),
+    ];
 
     return [
       new charts.Series<OrdinalSales, String>(
