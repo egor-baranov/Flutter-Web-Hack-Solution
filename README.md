@@ -13,7 +13,7 @@ Leaders Of Digital Hack Flutter web solution.
 * Null Safety
 * Adaptive ui for mobile version [In Progress] 
 
-## Web App Playground
+## Web Playground
 [In Progress]
 
 ## Mobile App of Service
